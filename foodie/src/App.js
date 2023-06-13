@@ -1,12 +1,19 @@
+import Header from "./Header";
 import Home from "./components/Home";
-import { BrowserRouter, Routes } from "react-router-dom";
+import About from "./components/About";
+import { Route, Switch } from 'react-router-dom';
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Home />
-    </BrowserRouter>
-  );
+    return (
+        <div>
+            <Header />
+            <Switch>
+                <Route exact path='/' component={Home} />
+                <Route path="/about" component={About} />
+            </Switch>
+        </div>
+    )
+
 }
 
 export default App;
