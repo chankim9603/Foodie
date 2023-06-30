@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
 
 function Food() {
   const API_KEY = "125a7a6824ba4e698a8bb78ff1616df2";
@@ -7,15 +9,20 @@ function Food() {
 
   const [keyword, setKeyword] = React.useState("");
   const [results, setResults] = React.useState([]);
+  const [searched, setSearched] = React.useState("");
 
   const getRecipeByAny = async (keyword) => {
-    const response = await fetch(
-      `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&query=${keyword}`
-    );
-    const data = await response.json();
-    // console.log(data);
-    // console.log(data.results);
-    setResults(data.results);
+    if (keyword !== "") {
+      const response = await fetch(
+        `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&query=${keyword}`
+      );
+      const data = await response.json();
+      // console.log(data);
+      console.log(data.results);
+      setResults(data.results);
+    } else {
+      setResults("");
+    }
   };
 
   const handleChange = (e) => {
@@ -25,33 +32,108 @@ function Food() {
   const handleSubmit = (e) => {
     e.preventDefault();
     getRecipeByAny(keyword);
+    setSearched("No results! :(");
   };
 
   const renderSearch = (results) => {
-    return results?.map((data) => {
-      return (
-        <div>
-          <div>{data.title}</div>
-          <img src={data.image} alt="" />
-        </div>
-      );
-    });
+    return results?.length != 0 ? (
+      results?.map((data) => {
+        return (
+          <Link className="food-card" to={`recipe/${data.id}`}>
+            <div className="names">{data.title}</div>
+            <img src={data.image} alt="" />
+          </Link>
+        );
+      })
+    ) : (
+      <div className="searched">{searched}</div>
+    );
   };
 
   return (
-    <div>
-      <form action="" onSubmit={handleSubmit}>
+    <FoodStyled>
+      <h1 className="title">Search by Food</h1>
+      <form className="search" action="" onSubmit={handleSubmit}>
         <input
           type="text"
           name="food-search"
           value={keyword}
           onChange={handleChange}
+          placeholder="Enter food here! Example: Pizza"
         ></input>
         <button type="submit">Search</button>
       </form>
-      {renderSearch(results)}
-    </div>
+      <div className="result">{renderSearch(results)}</div>
+    </FoodStyled>
   );
 }
+
+const FoodStyled = styled.div`
+  background-color: #137a63;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 15rem 15rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  .title {
+    font-size: 3rem;
+  }
+  .search {
+    position: relative;
+    width: 100%;
+  }
+  .search input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: none;
+    outline: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    background-color: #fff;
+    border: 3px solid black;
+  }
+  .search button {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    outline: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.4s ease-in-out;
+    font-family: inherit;
+    border: 3px solid black;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .result {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .names {
+    color: black;
+    font-size: 1.2rem;
+  }
+  .food-card {
+    background-color: #ece6ff;
+    padding: 1rem 0.5rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 10px;
+    border: 3px solid black;
+  }
+  .searched {
+    font-size: 2rem;
+  }
+`;
 
 export default Food;
