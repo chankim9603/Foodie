@@ -77,6 +77,9 @@ function Header() {
 }
 
 const HeaderStyle = styled.div`
+  position: fixed;
+  width: 100%;
+  z-index: 1;
   .sections {
     display: flex;
     flex-direction: column;
