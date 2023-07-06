@@ -7,7 +7,7 @@ function Home() {
   return (
     <HomeStyle>
       <div className="home-img">
-        <img src={chef} alt="" style={{ width: 2000, height: 950 }} />
+        <img src={chef} alt="" />
       </div>
     </HomeStyle>
   );
