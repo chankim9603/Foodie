@@ -1,42 +1,132 @@
-import React from "react";
-import { GoogleMap, Marker, useLoadScript } from "react-google-maps/api";
-import { useMemo } from "react";
-import styled from "styled-components";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
 
+const Search = ({ onSearch }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const handleChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+            onSearch(searchTerm);
+        }
+    };
+
+    return (
+        <div>
+            <input
+                type="text"
+                id="searchTerm"
+                name="searchTerm"
+                onChange={handleChange}
+                onKeyPress={handleKeyPress}
+                value={searchTerm}
+            />
+            <button onClick={() => onSearch(searchTerm)}>Search</button>
+        </div>
+    );
+};
 
 const Restaurant = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [map, setMap] = useState(null);
+    const [selectedRestaurant, setSelectedRestaurant] = useState(null);
     const { isLoaded } = useLoadScript({
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+        googleMapsApiKey: 'AIzaSyDC2SFtvrCtHCJkCdWKiXoLTn8CI7F8pIg',
     });
-    const center = useMemo(() => ({ lat: 33.753746, long: -84.386330 }), []);
 
+    useEffect(() => {
+        if (isLoaded && searchTerm && map) {
+            const searchRestaurants = async () => {
+                try {
+                    const response = await axios.get(
+                        `https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses/search`,
+                        {
+                            headers: {
+                                Authorization: `Bearer kk8a2BP-9sEjKki126oia8BYJurhKXV5UDpW0Zb3zuzfh3WA-K4VsdeQm0u5T7fSTidUy8PFkhx2ZZ0sqwPov0zkK1F95Eg05ZYDMjKqLyOa9iLUEHFCJIbcn6SYZHYx`,
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            params: {
+                                categories: searchTerm,
+                                location: 'Atlanta',
+                                limit: 5,
+                            },
+                        }
+                    );
+                    setSearchResults(response.data.businesses);
+                } catch (error) {
+                    console.error('Error occurred while fetching data from Yelp API:', error);
+                }
+            };
+            searchRestaurants();
+        }
+    }, [isLoaded, searchTerm, map]);
+
+    const handleSearch = (term) => {
+        setSearchTerm(term.toLowerCase());
+    };
+
+    const handleMarkerClick = (restaurant) => {
+        setSelectedRestaurant(restaurant);
+    };
+
+    const handleInfoWindowClose = () => {
+        setSelectedRestaurant(null);
+    };
+
+    const onMapLoad = (map) => {
+        setMap(map);
+    };
+
+    const containerStyle = {
+        width: '400px',
+        height: '400px',
+    };
 
     return (
         <div className="Map">
-            {!isLoaded ? (
-                <h1>Loading...</h1>
-            ) : (
+            <Search onSearch={handleSearch} />
+            {isLoaded ? (
                 <GoogleMap
-                    mapContainerClassName="map-container"
-                    center={center}
-                    zoom={10}>
-
-                    <Marker position={{ lat: 33.753746, long: -84.386330 }} />
+                    mapContainerStyle={containerStyle}
+                    center={{ lat: 33.7490, lng: -84.3880 }}
+                    zoom={10}
+                    onLoad={onMapLoad}
+                >
+                    {searchResults.map((result) => (
+                        <Marker
+                            key={result.id}
+                            position={{
+                                lat: result.coordinates.latitude,
+                                lng: result.coordinates.longitude,
+                            }}
+                            onClick={() => handleMarkerClick(result)}
+                        />
+                    ))}
+                    {selectedRestaurant && (
+                        <InfoWindow
+                            position={{
+                                lat: selectedRestaurant.coordinates.latitude,
+                                lng: selectedRestaurant.coordinates.longitude,
+                            }}
+                            onCloseClick={handleInfoWindowClose}
+                        >
+                            <div>
+                                <h2>{selectedRestaurant.name}</h2>
+                                <p>{selectedRestaurant.location.address}</p>
+                            </div>
+                        </InfoWindow>
+                    )}
                 </GoogleMap>
-
+            ) : (
+                <h1>Loading...</h1>
             )}
         </div>
     );
 };
-const RestaurantStyle = styled.div`
-.Map {
-    height: 100vh;
-    width: 100vh;
-}
 
-.map-container {
-    height: 100%;
-    width: 100%;
-}
-`;
 export default Restaurant;
