@@ -1,16 +1,15 @@
 import React from "react";
-import Header from "../Header";
 import styled from "styled-components";
 import chef from "../images/smiling-chef.jpg";
 
 function Home() {
-  return (
-    <HomeStyle>
-      <div className="home-img">
-        <img src={chef} alt="" />
-      </div>
-    </HomeStyle>
-  );
+    return (
+        <HomeStyle>
+            <div className="home-img">
+                <img src={chef} alt="" />
+            </div>
+        </HomeStyle>
+    );
 }
 
 const HomeStyle = styled.div`
