@@ -55,7 +55,7 @@ function Recipe() {
 }
 
 const RecipeStyled = styled.div`
-  padding: 0 10rem;
+  padding: 10rem 10rem;
   .title {
     padding: 1rem 0;
   }
